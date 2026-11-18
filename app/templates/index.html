@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Citizen Assist — Documentos pessoais</title>
+<style>
+  :root { --fonte: 1.15rem; --texto: #111; --fundo: #fff; --azul: #0b3d91; --cinza: #f2f4f7; --borda: #555; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: var(--fonte)/1.6 system-ui, "Segoe UI", Arial, sans-serif; color: var(--texto); background: var(--fundo); }
+  .pular { position: absolute; left: -999px; }
+  .pular:focus { left: 1rem; top: 1rem; background: #ffdd00; color: #000; padding: .5rem 1rem; z-index: 10; }
+  header { background: var(--azul); color: #fff; padding: 1rem 1.25rem; }
+  header h1 { margin: 0; font-size: 1.5em; }
+  header p { margin: .25rem 0 0; }
+  main { max-width: 52rem; margin: 0 auto; padding: 1rem 1.25rem 3rem; }
+  .aviso { border-left: 6px solid #b45309; background: #fff7e6; padding: .75rem 1rem; margin: 1rem 0; }
+  h2 { font-size: 1.2em; margin: 1.5rem 0 .5rem; }
+  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .5rem; padding: 0; list-style: none; }
+  button, textarea { font: inherit; }
+  button { min-height: 48px; padding: .6rem 1rem; border: 2px solid var(--azul); border-radius: 8px; background: #fff; color: var(--azul); cursor: pointer; text-align: left; width: 100%; }
+  button.principal { background: var(--azul); color: #fff; width: auto; }
+  button:hover { background: #e8eefb; }
+  button.principal:hover { background: #082d6b; }
+  :focus-visible { outline: 4px solid #ffbf00; outline-offset: 2px; }
+  label { font-weight: 700; display: block; margin-bottom: .35rem; }
+  textarea { width: 100%; min-height: 5.5rem; padding: .6rem; border: 2px solid var(--borda); border-radius: 8px; }
+  .linha { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-top: .5rem; }
+  .ajuda { color: #333; font-size: .95em; }
+  #conversa { list-style: none; padding: 0; margin: 0; }
+  #conversa li { padding: .75rem 1rem; border-radius: 8px; margin: .5rem 0; white-space: pre-wrap; }
+  .usuario { background: var(--cinza); border: 1px solid #ccc; }
+  .assistente { background: #fff; border: 2px solid var(--azul); }
+  .quem { font-weight: 700; display: block; }
+  .controles { display: flex; gap: .5rem; margin-top: .5rem; }
+  .controles button { width: auto; }
+</style>
+</head>
+<body>
+<a class="pular" href="#pergunta">Pular para a pergunta</a>
+<header>
+  <h1>Citizen Assist</h1>
+  <p>Orientação sobre documentos pessoais da Central do Cidadão de Aurora.</p>
+</header>
+<main>
+  <p class="aviso" role="note"><strong>Atenção:</strong> este é um protótipo educacional, não um canal oficial.
+    Confirme sempre no site do órgão. <strong>Não digite dados pessoais</strong> (CPF, RG, endereço, telefone, e-mail).</p>
+
+  <div class="controles" aria-label="Tamanho do texto">
+    <button type="button" id="menor" aria-label="Diminuir o texto">A−</button>
+    <button type="button" id="maior" aria-label="Aumentar o texto">A+</button>
+  </div>
+
+  <h2 id="titulo-menu">Escolha um assunto</h2>
+  <ul class="menu" aria-labelledby="titulo-menu">
+    {% for n, (nome, exemplo) in menu.items() %}
+    <li><button type="button" class="assunto" data-pergunta="{{ exemplo }}">{{ n }}. {{ nome }}</button></li>
+    {% endfor %}
+  </ul>
+
+  <h2>Ou escreva sua pergunta</h2>
+  <form id="form">
+    <label for="pergunta">Sua pergunta</label>
+    <textarea id="pergunta" maxlength="500" aria-describedby="contador dica"
+      placeholder="Ex.: Quanto custa a segunda via do RG?"></textarea>
+    <div class="linha">
+      <button type="submit" class="principal">Enviar pergunta</button>
+      <span id="contador" class="ajuda" aria-live="polite">0 de 500 caracteres</span>
+    </div>
+    <p id="dica" class="ajuda">Dica: Enter envia. Shift + Enter quebra a linha.</p>
+  </form>
+
+  <h2>Conversa</h2>
+  <ul id="conversa" aria-live="polite" aria-relevant="additions"></ul>
+</main>
+<script>
+  const form = document.getElementById("form"), campo = document.getElementById("pergunta"),
+        conversa = document.getElementById("conversa"), contador = document.getElementById("contador");
+  let tamanho = 1.15;
+  document.getElementById("maior").onclick = () => { tamanho = Math.min(1.8, tamanho + .1); document.documentElement.style.setProperty("--fonte", tamanho + "rem"); };
+  document.getElementById("menor").onclick = () => { tamanho = Math.max(1, tamanho - .1); document.documentElement.style.setProperty("--fonte", tamanho + "rem"); };
+  campo.addEventListener("input", () => { contador.textContent = campo.value.length + " de 500 caracteres"; });
+  campo.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+
+  function adicionar(quem, texto, classe) {
+    const li = document.createElement("li"); li.className = classe;
+    const q = document.createElement("span"); q.className = "quem"; q.textContent = quem;
+    const t = document.createElement("span"); t.textContent = texto;     // textContent: sem injeção de HTML
+    li.append(q, t); conversa.append(li); li.scrollIntoView({behavior: "smooth", block: "nearest"});
+    return t;
+  }
+  async function enviar(texto) {
+    adicionar("Você", texto || "(mensagem vazia)", "usuario");
+    const saida = adicionar("Assistente", "Procurando nas fichas…", "assistente");
+    try {
+      const r = await fetch("/api/perguntar", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({mensagem: texto})});
+      saida.textContent = (await r.json()).resposta;
+    } catch { saida.textContent = "Não consegui responder agora. Tente de novo em alguns segundos."; }
+    campo.focus();
+  }
+  form.addEventListener("submit", e => { e.preventDefault(); const t = campo.value; campo.value = ""; contador.textContent = "0 de 500 caracteres"; enviar(t); });
+  document.querySelectorAll(".assunto").forEach(b => b.addEventListener("click", () => enviar(b.dataset.pergunta)));
+</script>
+</body>
+</html>

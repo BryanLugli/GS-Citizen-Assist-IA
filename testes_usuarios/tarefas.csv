@@ -1,0 +1,16 @@
+participante;tarefa;tempo_segundos;acertou_S_N;usou_so_teclado_S_N;observacao
+P1;T1;30;S;;
+P1;T2;25;S;;
+P1;T3;35;S;;
+P2;T1;40;S;;
+P2;T2;30;S;;
+P2;T3;40;S;;
+P3;T1;35;S;;
+P3;T2;28;S;;
+P3;T3;34;S;;
+P4;T1;27;S;;
+P4;T2;32;S;;
+P4;T3;30;S;;
+P5;T1;45;S;;
+P5;T2;45;S;;
+P5;T3;40;S;;

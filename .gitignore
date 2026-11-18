@@ -1,0 +1,9 @@
+.env
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+*_SIMULADO.json
+*_SIMULADO.md
+chave_groq.txt
+instalacao_log.txt
+avaliacao_log.txt
